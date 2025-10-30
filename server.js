@@ -1,20 +1,25 @@
+// --- Imports ---
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config(); // Load .env variables
 const apiRoutes = require('./routes/api');
-const Task = require('./models/Task'); // import Task model
+const Task = require('./models/Task');
 
+// --- App setup ---
 const app = express();
 const PORT = process.env.PORT || 5001;
+const MONGO_URI = process.env.MONGO_URI;
 
-// --- Database Connection ---
-const MONGO_URI = 'mongodb+srv://tadidurgaprasad01_db_user:Durga@cluster0.l6mkeax.mongodb.net/tasktracker';
-
-mongoose.connect(MONGO_URI)
+// --- Connect to MongoDB ---
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .then(async () => {
     console.log('✅ MongoDB connected successfully.');
 
-    // --- Auto-seed logic ---
+    // --- Seed default tasks (only once) ---
     const existingTasks = await Task.find();
     if (existingTasks.length === 0) {
       console.log('🌱 No tasks found. Seeding default data...');
@@ -73,7 +78,12 @@ app.use(express.json());
 // --- Routes ---
 app.use('/api', apiRoutes);
 
+// --- Root route for testing ---
+app.get('/', (req, res) => {
+  res.send('✅ Task Tracker Backend is running!');
+});
+
 // --- Start Server ---
 app.listen(PORT, () => {
-  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+  console.log(`🚀 Backend server running on port ${PORT}`);
 });
